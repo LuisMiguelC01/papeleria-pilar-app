@@ -200,8 +200,8 @@ firebase deploy --only hosting
 | Integrante | Rol | Aporte | Responsabilidades Principales |
 | :--- | :--- | :---: | :--- |
 | **Luis Miguel Canchimbo Gómez** | Líder Técnico y Desarrollador Principal | **80%** | Arquitectura, desarrollo completo (React Native / Expo), integración con Firebase (Firestore, Auth, Hosting), IA híbrida (1-NN + Gemini) y despliegue. |
-| **Aleja [Apellido]** | Pruebas (QA) y Documentación | **10%** | Pruebas funcionales en dispositivos, validación de flujos de usuario y apoyo en documentación. |
-| **Elkin [Apellido]** | Pruebas (QA) y Documentación | **10%** | Pruebas funcionales, verificación de escenarios de venta/inventario y apoyo en documentación. |
+| **Yiseth Alejandra Cuetia Indo** | Pruebas (QA) y Documentación | **10%** | Pruebas funcionales en dispositivos, validación de flujos de usuario y apoyo en documentación. |
+| **Elkin Stiven Casierra Cuero** | Pruebas (QA) y Documentación | **10%** | Pruebas funcionales, verificación de escenarios de venta/inventario y apoyo en documentación. |
 
 [![GitHub](https://img.shields.io/badge/GitHub-LuisMiguelC01-181717?style=flat-square&logo=github)](https://github.com/LuisMiguelC01)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Conectar-0A66C2?style=flat-square&logo=linkedin)](https://linkedin.com/in/TU-LINKEDIN)
