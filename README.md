@@ -149,7 +149,7 @@ papeleria-pilar/
 
 ### 1. Clonar el repositorio e instalar dependencias
 ```bash
-git clone [https://github.com/TU-USUARIO/papeleria-pilar-app.git](https://github.com/TU-USUARIO/papeleria-pilar-app.git)
+git clone [https://github.com/LuisMiguelC01/papeleria-pilar-app.git](https://github.com/LuisMiguelC01/papeleria-pilar-app.git)
 cd papeleria-pilar-app
 npm install
 ```
