@@ -2,6 +2,7 @@
 import { Platform } from "react-native";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, initializeFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY?.trim(),
@@ -17,6 +18,7 @@ export const FIREBASE_CONFIGURADO = Boolean(
 );
 
 let db = null;
+let auth = null;
 
 if (FIREBASE_CONFIGURADO) {
   const yaExiste = getApps().length > 0;
@@ -24,7 +26,6 @@ if (FIREBASE_CONFIGURADO) {
 
   if (Platform.OS !== "web" && !yaExiste) {
     try {
-      // Necesario en Expo Go (Android/iOS) para que Firestore no se quede colgado
       db = initializeFirestore(app, {
         experimentalForceLongPolling: true,
       });
@@ -34,10 +35,15 @@ if (FIREBASE_CONFIGURADO) {
   } else {
     db = getFirestore(app);
   }
+
+  // Firebase Auth con popup solo se usa en la versión Web (Netlify / Navegador)
+  if (Platform.OS === "web") {
+    auth = getAuth(app);
+  }
 } else {
   console.warn(
     "[Firebase] No se detectaron EXPO_PUBLIC_FIREBASE_API_KEY o PROJECT_ID en .env",
   );
 }
 
-export { db };
+export { db, auth };

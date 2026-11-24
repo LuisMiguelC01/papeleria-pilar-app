@@ -10,19 +10,49 @@ import {
   Platform,
   ScrollView,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import { useTema } from "../context/TemaContext";
+import {
+  GOOGLE_AUTH_DISPONIBLE,
+  iniciarSesionConGoogle,
+} from "../services/authGoogleService";
+import { obtenerOCrearUsuarioGoogle } from "../services/firestoreService";
 
-export function PantallaLogin({ onIniciarSesion }) {
+export function PantallaLogin({ onIniciarSesion, onLoginGoogle }) {
   const { tema, esOscuro, alternarTema } = useTema();
 
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [cargandoGoogle, setCargandoGoogle] = useState(false);
   const [error, setError] = useState("");
 
   const margenSuperiorAndroid =
     Platform.OS === "android" ? Math.max(StatusBar.currentHeight || 0, 34) : 0;
+
+  async function manejarLoginGoogle() {
+    if (cargandoGoogle) return;
+    setError("");
+    setCargandoGoogle(true);
+    try {
+      const datosGoogle = await iniciarSesionConGoogle();
+      const cuentaVendedor = await obtenerOCrearUsuarioGoogle(datosGoogle);
+
+      if (!cuentaVendedor.activo) {
+        setError("Tu cuenta de vendedor fue desactivada por el administrador.");
+        return;
+      }
+
+      if (onLoginGoogle) {
+        onLoginGoogle(cuentaVendedor);
+      }
+    } catch (err) {
+      setError(err?.message || "No se pudo iniciar sesión con Google.");
+    } finally {
+      setCargandoGoogle(false);
+    }
+  }
 
   const manejarIngreso = () => {
     const res = onIniciarSesion(usuario, password);
@@ -30,12 +60,6 @@ export function PantallaLogin({ onIniciarSesion }) {
       setError(res.error || "Credenciales incorrectas.");
       return;
     }
-    setError("");
-  };
-
-  const autocompletar = (u, p) => {
-    setUsuario(u);
-    setPassword(p);
     setError("");
   };
 
@@ -59,7 +83,6 @@ export function PantallaLogin({ onIniciarSesion }) {
           contentContainerStyle={styles.scrollContenedor}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Botón rápido de tema */}
           <View style={styles.barraSuperior}>
             <Pressable
               style={[
@@ -86,7 +109,6 @@ export function PantallaLogin({ onIniciarSesion }) {
               },
             ]}
           >
-            {/* Marca */}
             <View style={styles.encabezadoMarca}>
               <View
                 style={[styles.circuloLogo, { backgroundColor: tema.primario }]}
@@ -96,9 +118,7 @@ export function PantallaLogin({ onIniciarSesion }) {
               <Text style={[styles.tituloMarca, { color: tema.texto }]}>
                 Papelería Pilar
               </Text>
-              <Text
-                style={[styles.subtituloMarca, { color: tema.textoSuave }]}
-              >
+              <Text style={[styles.subtituloMarca, { color: tema.textoSuave }]}>
                 Sistema de Gestión Interna • Inicia sesión
               </Text>
             </View>
@@ -184,53 +204,44 @@ export function PantallaLogin({ onIniciarSesion }) {
               <Text style={styles.textoBotonIngresar}>Ingresar al Sistema</Text>
             </Pressable>
 
-            {/* Accesos rápidos para pruebas */}
-            <View
-              style={[
-                styles.cajaDemos,
-                {
-                  backgroundColor: tema.tarjetaSecundaria,
-                  borderColor: tema.bordeSuave,
-                },
-              ]}
-            >
-              <Text style={[styles.tituloDemos, { color: tema.textoSuave }]}>
-                ACCESOS RÁPIDOS DE PRUEBA
-              </Text>
-              <View style={styles.filaDemos}>
-                <Pressable
-                  style={[
-                    styles.chipDemo,
-                    {
-                      backgroundColor: tema.primarioSuave,
-                      borderColor: tema.primarioBorde,
-                    },
-                  ]}
-                  onPress={() => autocompletar("admin", "1234")}
-                >
-                  <Text style={[styles.textoDemo, { color: tema.primario }]}>
-                    👑 Admin (admin / 1234)
+            {GOOGLE_AUTH_DISPONIBLE && (
+              <>
+                <View style={styles.separadorO}>
+                  <View
+                    style={[styles.lineaSep, { backgroundColor: tema.borde }]}
+                  />
+                  <Text style={[styles.textoSep, { color: tema.textoSuave }]}>
+                    o ingresa como invitado / vendedor
                   </Text>
-                </Pressable>
+                  <View
+                    style={[styles.lineaSep, { backgroundColor: tema.borde }]}
+                  />
+                </View>
 
                 <Pressable
                   style={[
-                    styles.chipDemo,
+                    styles.botonGoogle,
                     {
-                      backgroundColor: tema.tarjeta,
+                      backgroundColor: tema.tarjetaSecundaria,
                       borderColor: tema.borde,
+                      opacity: cargandoGoogle ? 0.65 : 1,
                     },
                   ]}
-                  onPress={() => autocompletar("vendedor", "1234")}
+                  disabled={cargandoGoogle}
+                  onPress={manejarLoginGoogle}
                 >
-                  <Text
-                    style={[styles.textoDemo, { color: tema.textoSecundario }]}
-                  >
-                    🧑‍💼 Vendedor (vendedor / 1234)
-                  </Text>
+                  {cargandoGoogle ? (
+                    <ActivityIndicator size="small" color={tema.primario} />
+                  ) : (
+                    <Text
+                      style={[styles.textoBotonGoogle, { color: tema.texto }]}
+                    >
+                      G  Continuar con Google (Rol Vendedor)
+                    </Text>
+                  )}
                 </Pressable>
-              </View>
-            </View>
+              </>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -326,26 +337,21 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "bold",
   },
-  cajaDemos: {
-    marginTop: 20,
-    padding: 12,
+  separadorO: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginVertical: 14,
+  },
+  lineaSep: { flex: 1, height: 1 },
+  textoSep: { fontSize: 11.5, fontWeight: "600" },
+  botonGoogle: {
+    height: 46,
     borderRadius: 12,
     borderWidth: 1,
-  },
-  tituloDemos: {
-    fontSize: 10,
-    fontWeight: "bold",
-    letterSpacing: 0.7,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  filaDemos: { gap: 8 },
-  chipDemo: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    borderWidth: 1,
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 14,
   },
-  textoDemo: { fontSize: 12, fontWeight: "700" },
+  textoBotonGoogle: { fontSize: 14, fontWeight: "700" },
 });

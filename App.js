@@ -44,6 +44,7 @@ import {
   guardarUsuarioNube,
   eliminarUsuarioNube,
 } from "./src/services/firestoreService";
+import { cerrarSesionGoogle } from "./src/services/authGoogleService";
 
 // Mapa de respaldo para conservar las imágenes locales (require) cuando vienen de Firestore
 const IMAGENES_LOCALES_POR_ID = PRODUCTOS_INICIALES.reduce((acc, item) => {
@@ -119,11 +120,11 @@ function AppPrincipal() {
   const esTableta = width >= 700;
 
   const margenSuperior =
-  Platform.OS === "android"
-    ? Math.max(StatusBar.currentHeight || 0, 34)
-    : Platform.OS === "ios"
-      ? 44
-      : 0;
+    Platform.OS === "android"
+      ? Math.max(StatusBar.currentHeight || 0, 34)
+      : Platform.OS === "ios"
+        ? 44
+        : 0;
 
   // 1. Carga rápida desde caché local + conexión en tiempo real con Firestore
   useEffect(() => {
@@ -151,7 +152,6 @@ function AppPrincipal() {
             const guardados = normalizarProductos(
               JSON.parse(productosGuardados),
             );
-            // Agrega automáticamente los productos nuevos del catálogo de 15 que falten en caché
             const idsLocales = new Set(guardados.map((p) => p.id));
             const nuevosFaltantes = normalizarProductos(
               PRODUCTOS_INICIALES.filter((p) => !idsLocales.has(String(p.id))),
@@ -304,6 +304,17 @@ function AppPrincipal() {
       return { ok: false, error: "Ingresa tu usuario y contraseña." };
     }
 
+    const cuentaPorUsuario = usuarios.find(
+      (u) => u.usuario.toLowerCase() === userLimpio,
+    );
+
+    if (cuentaPorUsuario && cuentaPorUsuario.proveedor === "google") {
+      return {
+        ok: false,
+        error: "Esta cuenta ingresa usando el botón de Google.",
+      };
+    }
+
     const encontrado = usuarios.find(
       (u) =>
         u.usuario.toLowerCase() === userLimpio && u.password === passLimpia,
@@ -326,6 +337,28 @@ function AppPrincipal() {
     return { ok: true };
   };
 
+  const iniciarSesionGoogleExitoso = (cuentaVendedor) => {
+    setUsuarios((prev) => {
+      const existe = prev.some((u) => u.id === cuentaVendedor.id);
+      const nuevaLista = existe
+        ? prev.map((u) => (u.id === cuentaVendedor.id ? cuentaVendedor : u))
+        : [...prev, cuentaVendedor];
+
+      AsyncStorage.setItem(
+        "@papeleria_usuarios",
+        JSON.stringify(nuevaLista),
+      ).catch(() => {});
+
+      return nuevaLista;
+    });
+
+    setSesionUsuarioId(cuentaVendedor.id);
+    setPestanaActiva("ventas");
+    AsyncStorage.setItem("@papeleria_sesion_id", cuentaVendedor.id).catch(
+      () => {},
+    );
+  };
+
   const cerrarSesion = () => {
     setDialogo({
       titulo: "Cerrar sesión",
@@ -336,6 +369,7 @@ function AppPrincipal() {
         setSesionUsuarioId(null);
         setGuiaVisible(false);
         setMostrarIA(false);
+        await cerrarSesionGoogle();
         try {
           await AsyncStorage.removeItem("@papeleria_sesion_id");
         } catch {}
@@ -539,7 +573,12 @@ function AppPrincipal() {
   }
 
   if (!usuarioActual) {
-    return <PantallaLogin onIniciarSesion={iniciarSesion} />;
+    return (
+      <PantallaLogin
+        onIniciarSesion={iniciarSesion}
+        onLoginGoogle={iniciarSesionGoogleExitoso}
+      />
+    );
   }
 
   const fondoSuperior = esTableta ? tema.barraFondo : tema.headerMovilFondo;

@@ -4,6 +4,7 @@ import {
   doc,
   setDoc,
   deleteDoc,
+  getDoc,
   getDocs,
   onSnapshot,
   writeBatch,
@@ -232,4 +233,30 @@ export async function guardarUsuarioNube(usuario) {
 export async function eliminarUsuarioNube(usuarioId) {
   if (!FIREBASE_CONFIGURADO || !db) return;
   await deleteDoc(doc(db, COL_USUARIOS, String(usuarioId)));
+}
+
+// 6. Obtener o crear cuenta de Vendedor al iniciar con Google
+export async function obtenerOCrearUsuarioGoogle({ uid, nombre, email }) {
+  const idDoc = `g_${uid}`;
+  const nuevoUsuario = {
+    id: idDoc,
+    nombre: String(nombre || email?.split("@")[0] || "Vendedor Invitado"),
+    usuario: String(email || idDoc).toLowerCase(),
+    password: "",
+    rol: "vendedor",
+    activo: true,
+    proveedor: "google",
+  };
+
+  if (!FIREBASE_CONFIGURADO || !db) return nuevoUsuario;
+
+  const ref = doc(db, COL_USUARIOS, idDoc);
+  const snap = await getDoc(ref);
+
+  if (snap.exists()) {
+    return { id: snap.id, ...snap.data() };
+  }
+
+  await setDoc(ref, nuevoUsuario);
+  return nuevoUsuario;
 }
