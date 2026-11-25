@@ -4,7 +4,7 @@
 
 **Aplicación multiplataforma (Android, iOS y Web) para la gestión integral de ventas, inventario visual, control de acceso por roles y analítica asistida por inteligencia artificial.**
 
-### 🌐 [Abrir Demo en Vivo (Firebase Hosting)]([https://papeleria-pilar.web.app])
+### 🌐 [Abrir Demo en Vivo (Firebase Hosting)](https://papeleria-pilar.web.app)
 
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![React Native](https://img.shields.io/badge/React_Native-Cross--Platform-61DAFB?style=for-the-badge&logo=react&logoColor=black)
