@@ -204,5 +204,5 @@ firebase deploy --only hosting
 | **Elkin Stiven Casierra Cuero** | Pruebas (QA) y Documentación | **10%** | Pruebas funcionales, verificación de escenarios de venta/inventario y apoyo en documentación. |
 
 [![GitHub](https://img.shields.io/badge/GitHub-LuisMiguelC01-181717?style=flat-square&logo=github)](https://github.com/LuisMiguelC01)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Conectar-0A66C2?style=flat-square&logo=linkedin)](www.linkedin.com/in/luis-miguel-canchimbo)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Conectar-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/luis-miguel-canchimbo/)
 
